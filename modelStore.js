@@ -4,11 +4,11 @@ const BookModel =require('./models/books');
 const GenreModel =require('./models/genres');
 const AuthorModel =require('./models/authors');
 const BookAuthorModel =require('./models/book_author');
+const config= require('./config.json')
 
-
-const sequelize = new Sequelize('BooksApp', 'root', '12345', {
-  host: 'localhost',
-  dialect: 'mysql',
+const sequelize = new Sequelize(config.sql.database, config.sql.user, config.sql.password, {
+  host: config.sql.host,
+  dialect: config.sql.connector
 });
 
 const Users = UserModel(sequelize, Sequelize);

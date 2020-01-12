@@ -1,0 +1,9 @@
+{
+	"sql":{
+	"host":"localhost",
+	"database":"BooksApp",
+	"user":"root",
+	"password":"12345",
+	"connector":"mysql"
+	}
+}

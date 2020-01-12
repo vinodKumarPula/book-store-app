@@ -8,33 +8,33 @@ const Schema={'/signup': {
     password: 'required'
   },
  '/books-POST':{
-  title:['required','regex:^[a-zA-Z0-9_]*$'],
+  title:'required|regex:[a-zA-Z0-9_\s]',
   genres:'required|arrayUnique',
-  'genres.*':['required','regex:^[a-zA-Z0-9_]*$'], 
+  'genres.*':'required|regex:[a-zA-Z0-9_\s]', 
   authors:'required|arrayUnique',
-  'authors.*':['required','regex:^[a-zA-Z0-9_]*$'] 
+  'authors.*':'required|regex:[a-zA-Z0-9_\s]' 
 }, 
 '/books/author-PUT':{
   authors:'required|arrayUnique',
-  'authors.*':['required','regex:^[a-zA-Z0-9_]*$'], 
+  'authors.*':'required|regex:[a-zA-Z0-9_\s]', 
   bookId:'required|integer'
 },
  '/books-PUT':{
-  title:'required|regex:^[a-zA-Z0-9_]*$',
+  title:'required|regex:[a-zA-Z0-9_\s]',
   genres:'object', 
   'genres.add': 'arrayUnique',
-  'genres.add.*':'required|regex:^[a-zA-Z0-9_]*$', 
+  'genres.add.*':'required|regex:[a-zA-Z0-9_\s]', 
    'genres.delete': 'arrayUnique',
   'genres.delete.*':'required|integer',  
   'genres.update':'arrayUnique',
   'genres.update.*':'object',
   'genres.update.*.id':'required|integer',
-  'genres.update.*.title':'required|regex:^[a-zA-Z0-9_]*$',
+  'genres.update.*.title':'required|regex:[a-zA-Z0-9_\s]',
   'authors':'object',
   'authors.add':'arrayUnique',
   'authors.delete':'arrayUnique',
   'authors.delete.*':'required|integer',
-  'authors.add.*':'required|regex:^[a-zA-Z0-9_]*$',
+  'authors.add.*':'required|regex:[a-zA-Z0-9_\s]',
   'authors.delete.*':'required|integer',
   bookId:'required|integer'
 
@@ -55,7 +55,7 @@ async function basicValidator(body,schema) {
 }
 function sendErrorMessage(res,errors){
 console.log('inside send errors')
-  res.status(400).send(errors)
+  res.status(405).send(errors)
 }
 
 

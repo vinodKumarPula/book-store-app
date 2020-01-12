@@ -2,6 +2,14 @@ const passport = require('passport');
 const Model = require('../modelStore');
 const sequelize= require('sequelize');
 
+function formatError(err,type){
+  console.log('Insidne formatError',err.original,type)
+  if(err && err.original && err.original.code=='ER_DUP_ENTRY')
+  return type=='Author'?'Author Already Exists':err.original.message.split("'")[1].split('-')[0]+' already Exits';
+return err;
+}
+
+
 async function addGenre(genres, bookId, transaction) {
   try {
     for (let genre of genres) {
@@ -14,7 +22,7 @@ async function addGenre(genres, bookId, transaction) {
       console.log('Genere;', d.id)
     }
   } catch (err) {
-    throw Error(err)
+    throw Error(formatError(err,'Genre'))
   }
 }
 
@@ -27,6 +35,7 @@ async function addAuthor(authors, bookId, transaction) {
       }, {
         transaction
       })
+      console.log('Author afte finnd',author)
       if (!auth)
         auth = await Model.Authors.create({
           name: author
@@ -41,7 +50,7 @@ async function addAuthor(authors, bookId, transaction) {
       })
     }
   } catch (err) {
-    throw Error(err)
+        throw Error(formatError(err,'Author'))
   }
 }
 
@@ -66,7 +75,7 @@ async function updateAuthors(authors,bookId,transaction){
     await deleteAuthors(authors.delete,bookId,transaction)
   }
 }catch(err){
-    throw Error(err)
+       throw Error(formatError(err,'Author'))
   }
 }
 
@@ -80,11 +89,12 @@ if(genres.delete && genres.delete.length>0){
   }
 if(genres.update && genres.update.length>0){
     for(let update of genres.update){
-       let updated= await Model.Genres.update({title:update.title, where:{id:update.id,bookId:bookId}},{transaction})
+       let updated= await Model.Genres.update({title:update.title}, {where:{id:update.id,bookId:bookId}},{transaction})
     }
 }
 }catch(err){
-    throw Error(err)
+  console.log('err in Genere',err)
+      throw Error(formatError(err,'Genre'))
   }
 }
 
@@ -99,9 +109,9 @@ try {
   await transaction.commit();
   return res.status(200).send({Sucess:true})
 } catch (err) {
-  console.log('Error in addBook',err)
-  if (transaction) await transaction.rollback();
-    return res.status(403).send({Sucess:false,reason:err.error})
+    err= formatError(err,'Book Title')
+   if (transaction) await transaction.rollback();  
+    return res.status(406).send({Sucess:false,reason:err.toString()})
 }
 }
 
@@ -115,17 +125,18 @@ async function editBooks(body,user,res){
   }
   transaction = await Model.sequelize.transaction();
   if(body.title)
-    await Model.Books.update({title:body.title.title,where:{id:body.title.id}},{transaction})
-  await addAuthor(body.authors,body.bookId,transaction)
+    await Model.Books.update({title:body.title.title},{where:{id:body.title.id}},{transaction})
+  if(body.authors)
+  await updateAuthors(body.authors,body.bookId,transaction)
+ if(body.genres)
+   await updateGenre(body.genres,body.bookId,transaction)
      await transaction.commit();
       res.status(200).send({Sucess:true})
     }  
     catch (err) {
-      console.log('Error in addBook',err)
-      if (transaction) await transaction.rollback();
-      if(err.code=='ER_DUP_ENTRY')
-        return res.status(403).send({Sucess:false,reason:'Author already Exists'});
-      return res.status(403).send({Sucess:false,reason:err.error})
+        err= formatError(err,'Book Title')
+  if (transaction) await transaction.rollback();
+    return res.status(406).send({Sucess:false,reason:err.toString()})
     }
 }
 
@@ -143,11 +154,8 @@ try {
       res.status(200).send({Sucess:true})
     }  
     catch (err) {
-      console.log('Error in addBook',err)
-      if (transaction) await transaction.rollback();
-      if(err.code=='ER_DUP_ENTRY')
-        return res.status(403).send({Sucess:false,reason:'Author already Exists'});
-      return res.status(403).send({Sucess:false,reason:err.error})
+     if (transaction) await transaction.rollback();
+      return res.status(406).send({Sucess:false,reason:err.toString()})
     }
   }
 
@@ -168,7 +176,7 @@ async function getBooks(body,user,res){
    return res.status(200).send({Sucess:true,books:requiredOut,authors:userAuthors})
   }catch(err){
     console.log('err**',err)
-     return res.status(403).send({Sucess:false,reason:err.error})
+     return res.status(406).send({Sucess:false,reason:err.toString()})
   }
 }
 
@@ -191,7 +199,7 @@ module.exports = (app) => {
         console.log(err);
       }
       if (info !== undefined) {
-  console.log('BOOKS',info.message)
+  // console.log('BOOKS',info.message)
         return res.status(401).send(info.message);
 
       }
@@ -224,7 +232,6 @@ module.exports = (app) => {
         console.log(err);
       }
       if (info !== undefined) {
-        console.log(info.message,'***********');
         return res.status(401).send(info.message);
       } 
        addBook(req.body,user,res)
@@ -236,7 +243,7 @@ module.exports = (app) => {
         console.log(err);
       }
       if (info !== undefined) {
-        console.log(info.message,'***********');
+
         return res.status(401).send(info.message);
       }
        addAuthorToUser(req.body,user,res)
@@ -248,7 +255,6 @@ module.exports = (app) => {
         console.log(err);
       }
       if (info !== undefined) {
-        console.log(info.message,'***********');
         return res.status(401).send(info.message);
       } 
        editBooks(req.body,user,res)
