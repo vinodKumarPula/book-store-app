@@ -1,0 +1,317 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "This is a sample Book Store Application.",
+    "version" : "1.0.0",
+    "title" : "BookStore App",
+    "contact" : {
+      "email" : "vinod.pula@gmail.com"
+    }
+  },
+  "host" : "localhost",
+  "tags" : [ {
+    "name" : "user",
+    "description" : "User Related"
+  }, {
+    "name" : "books",
+    "description" : "All out Books and its authors and genres"
+  } ],
+  "schemes" : [ "http" ],
+  "security" : [ {
+    "ApiKeyAuth" : [ ]
+  } ],
+  "paths" : {
+    "/books" : {
+      "get" : {
+        "tags" : [ "books" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "{Success:true}"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "books" ],
+        "summary" : "Add a new Book to the store",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json", "application/xml" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Book object that needs to be added to the store",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/Book"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "{Success:true}"
+          },
+          "403" : {
+            "description" : "{Sucess:false,reason:'UnAuthorized or Book Doesnt belongs to User'}"
+          },
+          "405" : {
+            "description" : "Invalid input"
+          },
+          "406" : {
+            "description" : "Already Exists"
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "books" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Book object that needs to be edited to the store",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/BookEdit"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "{Success:true}"
+          }
+        }
+      }
+    },
+    "/book/author" : {
+      "put" : {
+        "tags" : [ "books" ],
+        "summary" : "Add Author to Book",
+        "produces" : [ "application/json", "application/xml" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Add Author object",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/body"
+          }
+        } ]
+      }
+    },
+    "/signup" : {
+      "post" : {
+        "tags" : [ "user" ],
+        "summary" : "Create user",
+        "description" : "This can only be done by the logged in user.",
+        "produces" : [ "application/json", "application/xml" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "Created user object",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/User"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "successful operation"
+          }
+        }
+      }
+    },
+    "/login" : {
+      "get" : {
+        "tags" : [ "user" ],
+        "summary" : "Logs user into the system",
+        "operationId" : "loginUser",
+        "produces" : [ "application/json", "application/xml" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "body",
+          "description" : "The user name for login",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/User"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          "400" : {
+            "description" : "Invalid username/password supplied"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions" : {
+    "ApiKeyAuth" : {
+      "type" : "apiKey",
+      "name" : "Authorization",
+      "in" : "header"
+    }
+  },
+  "definitions" : {
+    "User" : {
+      "type" : "object",
+      "properties" : {
+        "email" : {
+          "type" : "string"
+        },
+        "password" : {
+          "type" : "string"
+        }
+      },
+      "xml" : {
+        "name" : "User"
+      }
+    },
+    "Book" : {
+      "type" : "object",
+      "required" : [ "authors", "genres", "title" ],
+      "properties" : {
+        "title" : {
+          "type" : "string",
+          "example" : "MyBook"
+        },
+        "genres" : {
+          "type" : "array",
+          "xml" : {
+            "name" : "Unique",
+            "wrapped" : true
+          },
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "authors" : {
+          "type" : "array",
+          "xml" : {
+            "name" : "Unique",
+            "wrapped" : true
+          },
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "BookEdit" : {
+      "type" : "object",
+      "properties" : {
+        "title" : {
+          "type" : "string",
+          "example" : "MyBook"
+        },
+        "genres" : {
+          "$ref" : "#/definitions/BookEdit_genres"
+        },
+        "authors" : {
+          "$ref" : "#/definitions/BookEdit_authors"
+        },
+        "bookId" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "updateGenre" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/definitions/updateGenre_inner"
+      }
+    },
+    "ApiResponse" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        }
+      }
+    },
+    "body" : {
+      "type" : "object",
+      "required" : [ "authors", "bookId" ],
+      "properties" : {
+        "bookId" : {
+          "type" : "integer"
+        },
+        "authors" : {
+          "type" : "array",
+          "xml" : {
+            "name" : "Unique",
+            "wrapped" : true
+          },
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "BookEdit_genres" : {
+      "type" : "object",
+      "properties" : {
+        "add" : {
+          "type" : "array",
+          "xml" : {
+            "name" : "Unique",
+            "wrapped" : true
+          },
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "delete" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "update" : { }
+      }
+    },
+    "BookEdit_authors" : {
+      "type" : "object",
+      "properties" : {
+        "add" : {
+          "type" : "array",
+          "xml" : {
+            "name" : "Unique",
+            "wrapped" : true
+          },
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "delete" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        }
+      }
+    },
+    "updateGenre_inner" : {
+      "type" : "object",
+      "properties" : {
+        "title" : {
+          "type" : "string"
+        },
+        "id" : {
+          "type" : "integer"
+        }
+      }
+    }
+  },
+  "externalDocs" : {
+    "description" : "Find out more about Swagger",
+    "url" : "http://swagger.io"
+  }
+}
