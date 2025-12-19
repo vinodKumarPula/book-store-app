@@ -7,6 +7,7 @@ module.exports = (sequelize, type) => sequelize.define('book_authors', {
       authorId:{
       type: type.INTEGER,
       primaryKey: true,
-      unique: 'my_book_author'
+      unique: 'my_book_author',
+      testing:"Hello"
     }
   });
