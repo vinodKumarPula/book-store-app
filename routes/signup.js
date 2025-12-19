@@ -4,6 +4,9 @@ module.exports = app => {
   app.post('/signup', (req, res, next) => {
     console.log('******req.body',req.body)
     passport.authenticate('signup', (err, user, info) => {
+      if(er){
+        console.log('new error');
+      }
       if (err) {
         console.error(err);
       }
